@@ -88,13 +88,6 @@ def place_market(side, qty, position_idx, reduce_only=False):
     except Exception as e:
         log.error(f"Order error: {e}")
 
-def open_initial_hedge():
-    log.info(f"Opening initial {FULL_SIZE} Long + {FULL_SIZE} Short")
-    place_market("Buy", FULL_SIZE, 1)
-    time.sleep(0.4)
-    place_market("Sell", FULL_SIZE, 2)
-    time.sleep(1)
-
 def calculate_close_size_for_sl(entry, current_price):
     price_diff = abs(current_price - entry)
     if price_diff == 0:
@@ -146,16 +139,7 @@ Time: {time.strftime('%Y-%m-%d %H:%M:%S')}
     send_email(subject, body)
 
 def main():
-    log.info("Bot started")
-
-    # Only open if no positions exist
-    pos = get_positions()
-    if not pos["long"] or not pos["short"]:
-        log.info("No positions found — opening initial hedge")
-        open_initial_hedge()
-    else:
-        log.info("Positions already exist — skipping initial open")
-
+    log.info("Bot started — waiting for existing positions")
     time.sleep(2)
 
     while True:
@@ -168,7 +152,7 @@ def main():
             pos = get_positions()
 
             if not pos["long"] or not pos["short"]:
-                log.warning("Positions missing — skipping this cycle (no auto-reopen)")
+                log.warning("Positions missing — waiting (bot will not open any trades)")
                 time.sleep(2)
                 continue
 
