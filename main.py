@@ -41,7 +41,6 @@ def send_email(subject: str, body: str):
         msg["To"] = EMAIL_RECEIVER
         msg["Subject"] = subject
         msg.attach(MIMEText(body, "plain"))
-
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(EMAIL_SENDER, EMAIL_PASSWORD)
             server.send_message(msg)
@@ -148,7 +147,15 @@ Time: {time.strftime('%Y-%m-%d %H:%M:%S')}
 
 def main():
     log.info("Bot started")
-    open_initial_hedge()
+
+    # Only open if no positions exist
+    pos = get_positions()
+    if not pos["long"] or not pos["short"]:
+        log.info("No positions found — opening initial hedge")
+        open_initial_hedge()
+    else:
+        log.info("Positions already exist — skipping initial open")
+
     time.sleep(2)
 
     while True:
@@ -160,7 +167,6 @@ def main():
 
             pos = get_positions()
 
-            # Positions missing — only log, do NOT reopen
             if not pos["long"] or not pos["short"]:
                 log.warning("Positions missing — skipping this cycle (no auto-reopen)")
                 time.sleep(2)
