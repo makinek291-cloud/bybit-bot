@@ -159,9 +159,10 @@ def main():
                 continue
 
             pos = get_positions()
+
+            # Positions missing — only log, do NOT reopen
             if not pos["long"] or not pos["short"]:
-                log.warning("Positions missing — reopening")
-                open_initial_hedge()
+                log.warning("Positions missing — skipping this cycle (no auto-reopen)")
                 time.sleep(2)
                 continue
 
